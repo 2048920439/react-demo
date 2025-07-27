@@ -1,12 +1,29 @@
-import {useLatest, useMemoizedFn, useUpdate} from "ahooks";
-import {useEffect, useRef} from "react";
-import {withResolvers} from "../utils/promise.ts";
+import { withResolvers } from '@/utils/promise';
+import { useLatest, useMemoizedFn, useUnmount, useUpdate, useUpdateEffect } from 'ahooks';
+import { useEffect, useRef } from 'react';
 
 interface NextTickTask<T> {
     cb?: (latestValue: T) => void;
     resolve: (latestValue: T) => void;
     reject: (err: any) => void;
 }
+
+interface ObserverConfig {
+    once: boolean;
+}
+
+interface StateObserverTask<T = unknown> {
+    cb: (state: T) => void;
+    config: ObserverConfig;
+}
+
+const createObserverConfig = (config: Partial<ObserverConfig>): ObserverConfig => {
+    return {
+        once: false,
+        ...config,
+    };
+};
+
 /**
  * 创建一个 nextTick 函数。
  *   - nextTick 的 callback 在下次渲染之后执行。
@@ -73,4 +90,44 @@ export const useNextTick = <T extends null | Record<any, any> = null>(dependValu
     });
     useEffect(runTask);
     return nextTick;
+};
+
+/**
+ * 观察状态变化的 Hook。
+ * @param state - 当前状态，每次状态变更时触发回调。
+ * @returns
+ *   一个元组，包含以下两个函数：
+ *   - `observer` - 注册回调函数：
+ *       - `cb` - 状态变更时执行的回调函数。
+ *       - `config`（可选） - 配置对象：
+ *           - `once` 是否只触发一次回调，默认为 `false`。
+ *       返回一个取消订阅函数，用于停止监听该回调。
+ *   - `discard` - 清空所有已注册的回调函数。
+ */
+export const useStateObserver = <T = unknown>(state: T) => {
+    const taskList = useRef(new Set<StateObserverTask<T>>());
+
+    useUpdateEffect(() => {
+        taskList.current.forEach((task) => {
+            const { config, cb } = task;
+            cb(state);
+            if (config.once) {
+                taskList.current.delete(task);
+            }
+        });
+    }, [state]);
+
+    const discard = useMemoizedFn(() => {
+        taskList.current.clear();
+    });
+
+    const observer = useMemoizedFn((cb: StateObserverTask<T>['cb'], config: Partial<ObserverConfig> = {}) => {
+        const task: StateObserverTask<T> = { config: createObserverConfig(config), cb };
+        taskList.current.add(task);
+        return () => taskList.current.delete(task);
+    });
+
+    useUnmount(discard);
+
+    return [observer, discard] as const;
 };
