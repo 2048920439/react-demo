@@ -151,31 +151,21 @@ export class PromiseQueue {
    */
   private process(): void {
     // 如果暂停，则不处理
-    if (this.isPaused) {
-      return
-    }
+    if (this.isPaused) return
 
     // 如果达到最大并发数，则不处理
-    if (this.executingQueue.length >= this.maxConcurrency) {
-      return
-    }
+    if (this.executingQueue.length >= this.maxConcurrency) return
 
     // 如果没有等待执行的任务，则不处理
-    if (this.pendingQueue.length === 0) {
-      return
-    }
+    if (!this.pendingQueue.length) return
 
     // 如果有屏障任务正在执行或等待执行，则不添加新任务
-    if (this.hasBarrier && this.executingQueue.length > 0) {
-      return
-    }
+    if (this.hasBarrier && this.executingQueue.length > 0) return
     // 检查待执行队列中的第一个任务
     const firstPendingTask = this.pendingQueue[0]
 
     // 如果等待队列中的第一个任务为AwaitPoint，需要等待运行队列为空才进入运行队列
-    if (firstPendingTask.type === TaskType.Await && this.executingQueue.length > 0) {
-      return
-    }
+    if (firstPendingTask.type === TaskType.Await && this.executingQueue.length > 0) return
 
     // 取出队列中的第一个任务
     const queueTask = this.pendingQueue.shift()!
@@ -218,13 +208,7 @@ export class PromiseQueue {
         }
       })
 
-    // 无任务
-    if (this.pendingQueue.length <= 0) return
-    // 达到最大并发
-    if (this.executingQueue.length >= this.maxConcurrency) return
-    // 已暂停
-    if (this.isPaused) return
-    // 继续清理任务
+    // 继续处理队列中的任务
     this.process()
   }
 }
