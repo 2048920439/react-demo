@@ -218,9 +218,13 @@ export class PromiseQueue {
         }
       })
 
-    // 如果还有任务且未达到最大并发数，继续处理
-    if (this.pendingQueue.length > 0 && this.executingQueue.length < this.maxConcurrency && !this.isPaused) {
-      this.process()
-    }
+    // 无任务
+    if (this.pendingQueue.length <= 0) return
+    // 达到最大并发
+    if (this.executingQueue.length >= this.maxConcurrency) return
+    // 已暂停
+    if (this.isPaused) return
+    // 继续清理任务
+    this.process()
   }
 }
