@@ -57,7 +57,7 @@ export function polling<T = void>(
   // 当前轮询次数
   let attempts = 1
 
-  const run = async () => {
+  const process = async () => {
     // 如果已完成，直接退出
     if (isDone) return
     // 计算消耗时间
@@ -88,7 +88,7 @@ export function polling<T = void>(
           isActioned = true
 
           attempts++
-          timer = setTimeout(run, delay)
+          timer = setTimeout(process, delay)
         },
         resolve: (data) => {
           if (isDone) return
@@ -119,6 +119,6 @@ export function polling<T = void>(
     }
   }
 
-  run() // 启动轮询
+  process() // 启动轮询
   return promise
 }

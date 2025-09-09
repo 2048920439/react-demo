@@ -13,3 +13,7 @@ export const withResolvers = <T = void>() => {
         reject: reject!
     };
 };
+
+export const isPromise = (value: any): value is Promise<any> => {
+    return value && typeof value.then === 'function';
+};
