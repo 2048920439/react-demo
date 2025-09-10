@@ -1,3 +1,5 @@
+import type { AnimationScheduler } from './schedulers/types';
+
 /**
  * 动画模块类型定义
  */
@@ -44,8 +46,8 @@ export interface AnimateValueOptions {
   easing?: EasingFunction;
   /** 动画时长（毫秒） */
   duration: number;
-  /** 帧率（可选，默认使用系统配置的60 fps） */
-  frameRate?: number;
+  /** 自定义调度器（可选，默认使用 requestAnimationFrame） */
+  scheduler?: AnimationScheduler;
 }
 
 /**

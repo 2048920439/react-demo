@@ -1,4 +1,4 @@
-import type { EasingPreset, BezierCurve } from './types';
+import type { BezierCurve, EasingPreset } from './types';
 
 /**
  * 动画精度配置常量
@@ -6,12 +6,6 @@ import type { EasingPreset, BezierCurve } from './types';
 export const PRECISION_CONFIG = {
   /** 默认查找表精度 */
   DEFAULT_LOOKUP_PRECISION: 1000,
-  /** 最小精度限制 */
-  MIN_PRECISION_LIMIT: 500,
-  /** 最大精度限制 */
-  MAX_PRECISION_LIMIT: 8000,
-  /** 默认帧率 (fps) - 用于计算动画精度的默认帧率 */
-  DEFAULT_FRAME_RATE: 60,
 } as const;
 
 /**

@@ -1,5 +1,5 @@
+import { ANIMATION_BOUNDS, BEZIER_CONFIG } from './constants';
 import type { BezierCurve } from './types';
-import { BEZIER_CONFIG, ANIMATION_BOUNDS } from './constants';
 
 /**
  * 计算三次贝塞尔曲线分量的纯函数
@@ -85,7 +85,7 @@ export const cubicBezier = (t: number, bezierCurve: BezierCurve): number => {
     } else {
       end = mid;
     }
-    mid = (start + end) * initialMid;
+    mid = (start + end) / 2;
   }
 
   return calculateBezierComponent(mid, y1, y2);
