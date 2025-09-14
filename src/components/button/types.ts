@@ -9,7 +9,6 @@ export type ButtonType =
   | 'icon'
   | 'iconSimplicity'
   | 'iconPrimary'
-  | 'danger'
 
 export type ButtonSize = 'mini' | 'small' | 'medium' | 'large'
 

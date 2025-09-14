@@ -7,7 +7,6 @@ import { ButtonProps, ButtonSize, ButtonType } from './types'
 const TypeClassMap: Record<ButtonType, string> = {
   default: styles.default,
   primary: styles.primary,
-  danger: styles.danger,
   simplicity: styles.simplicity,
   gray: styles.gray,
   alert: styles.alert,
