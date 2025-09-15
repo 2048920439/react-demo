@@ -12,9 +12,3 @@ export interface IWebSocketService {
   subscribe(topic: string): void;
   close(): void;
 }
-
-export interface IApplicationFormService {
-  loadApplicationForm(): Promise<any>
-  saveApplicationForm(data: any): Promise<any>
-  deleteApplicationForm(): Promise<any>
-}

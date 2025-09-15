@@ -1,9 +1,9 @@
 import { ApplicationFormService, HttpService, WebSocketService } from './services'
-import { ApplicationFormServiceToken, EnvToken, HttpToken, WebSocketToken } from './token'
+import { EnvToken } from './token'
 import { Env } from './types'
 import {
   container,
-  DependencyContainer,
+  DependencyContainer
 } from 'tsyringe'
 
 export interface CreateContainerConfig {
@@ -17,11 +17,11 @@ export const createContainer = (config: CreateContainerConfig) => {
   localContainer.register(EnvToken, { useValue: config.env })
 
   // 基础服务
-  localContainer.registerSingleton(HttpToken, HttpService)
-  localContainer.registerSingleton(WebSocketToken, WebSocketService)
+  localContainer.registerSingleton(HttpService, HttpService)
+  localContainer.registerSingleton(WebSocketService, WebSocketService)
 
   // 业务层
-  localContainer.registerSingleton(ApplicationFormServiceToken, ApplicationFormService)
+  localContainer.registerSingleton(ApplicationFormService, ApplicationFormService)
 
   return localContainer
 }

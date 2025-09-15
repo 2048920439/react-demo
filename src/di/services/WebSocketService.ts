@@ -1,12 +1,13 @@
-import { EnvToken, HttpToken } from '@/di/token'
-import  type { Env, IHttpService, IWebSocketService } from '@/di/types'
+import { EnvToken } from '@/di/token'
+import type { Env, IHttpService, IWebSocketService } from '@/di/types'
 import { inject, injectable } from 'tsyringe'
+import { HttpService } from './HttpService'
 
 @injectable()
 export class WebSocketService implements IWebSocketService {
   constructor(
     @inject(EnvToken) private env: Env,
-    @inject(HttpToken) private http: IHttpService
+    @inject(HttpService) private http: IHttpService
   ) {}
 
   connect(url: string) {

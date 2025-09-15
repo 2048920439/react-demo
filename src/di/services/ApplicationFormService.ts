@@ -1,22 +1,38 @@
-import { HttpToken } from '@/di/token'
-import type { IApplicationFormService, IHttpService } from '@/di/types'
+import { HttpService } from './HttpService'
+import type { IHttpService } from '@/di/types'
+import { BehaviorSubject } from 'rxjs'
 import { inject, injectable } from 'tsyringe'
 
+
+export interface ApplicationFormData {
+  username: string
+  sex: 0 | 1 | 2
+  age: number
+}
+
+const defaultApplicationFormData = (): ApplicationFormData => {
+  return {
+    username: '',
+    sex: 0,
+    age: 0
+  }
+}
+
 @injectable()
-export class ApplicationFormService implements IApplicationFormService {
+export class ApplicationFormService {
   constructor(
-    @inject(HttpToken) private http: IHttpService
+    @inject(HttpService) private http: IHttpService
   ) {}
 
-  loadApplicationForm() {
-    return this.http.get(`/api/application-form`)
+  private _applicationFormData = new BehaviorSubject<ApplicationFormData>(defaultApplicationFormData())
+  FormDataChangeEvent = this._applicationFormData.asObservable()
+
+  updateFromDate(data: ApplicationFormData) {
+    this._applicationFormData.next(data)
   }
 
-  saveApplicationForm(data: any) {
-    return this.http.put(`/api/application-form`, data)
+  submit() {
+    return this.http.post('/api/application-form', this._applicationFormData.getValue())
   }
 
-  deleteApplicationForm() {
-    return this.http.delete(`/api/application-form`)
-  }
 }
