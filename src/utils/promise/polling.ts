@@ -1,4 +1,4 @@
-import { withResolvers } from '@/utils/promise'
+import { withResolvers } from './utils'
 
 export interface PollingParams<T> {
   /**
