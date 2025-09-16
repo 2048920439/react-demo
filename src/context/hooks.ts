@@ -15,7 +15,8 @@ export function useService<T>(service: InjectionToken<T>): T {
   const { serviceContainer } = useDemoContext()
 
   if (!serviceContainer.isRegistered(service)) {
-    throw new Error(`Service ${(service as any).name} not registered`)
+    const serviceName = (service as any).name || (service as any).toString();
+    throw new Error(`Service ${serviceName} not registered`)
   }
 
   return serviceContainer.resolve(service)
