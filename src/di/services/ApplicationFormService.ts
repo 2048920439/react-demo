@@ -1,6 +1,6 @@
 import { HttpService } from './HttpService'
 import type { IHttpService } from '@/di/types'
-import { BehaviorSubject } from 'rxjs'
+import { BehaviorSubject, Subject } from 'rxjs'
 import { inject, injectable } from 'tsyringe'
 
 
@@ -24,15 +24,33 @@ export class ApplicationFormService {
     @inject(HttpService) private http: IHttpService
   ) {}
 
-  private _applicationFormData = new BehaviorSubject<ApplicationFormData>(defaultApplicationFormData())
-  FormDataChangeEvent = this._applicationFormData.asObservable()
 
-  updateFromDate(data: ApplicationFormData) {
-    this._applicationFormData.next(data)
+  private _FormDataSubject = new BehaviorSubject(defaultApplicationFormData())
+  FormDataChangeEvent = this._FormDataSubject.asObservable()
+  get formData() {
+    return this._FormDataSubject.getValue()
   }
 
-  submit() {
-    return this.http.post('/api/application-form', this._applicationFormData.getValue())
+  private _SubmitSubject = new Subject<ApplicationFormData>()
+  SubmitEvent = this._SubmitSubject.asObservable()
+
+  private _SubmitResultSubject = new Subject<{ result: any, isSuccess: boolean }>()
+  SubmitResultEvent = this._SubmitResultSubject.asObservable()
+
+  updateFromDate(data: ApplicationFormData) {
+    this._FormDataSubject.next(data)
+  }
+
+  async submit() {
+    this._SubmitSubject.next(this.formData)
+    try {
+      const result = await this.http.post('/api/application-form', this._FormDataSubject.getValue())
+      this._SubmitResultSubject.next({ result, isSuccess: true })
+      return result
+    } catch (e) {
+      this._SubmitResultSubject.next({ result: e, isSuccess: false })
+      throw e
+    }
   }
 
 }
