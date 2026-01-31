@@ -6,7 +6,7 @@ import { InjectionToken } from 'tsyringe'
 function useDemoContext() {
   const ctx = useContext(DemoContext)
   if (!ctx) {
-    throw new Error('DemoContextProvider not found')
+    throw new Error('')
   }
   return ctx
 }
