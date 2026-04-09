@@ -27,7 +27,7 @@ export interface PollingConfig {
   /**
    * 轮询间隔（毫秒）
    */
-  delay?: number;
+  delay?: number | ((attempt: number) => number)
   /**
    * 最大轮询次数
    */
@@ -38,6 +38,21 @@ export interface PollingConfig {
   maxElapsedTime?: number;
 }
 
+export interface PollingController {
+  cancel: () => void
+}
+
+export interface PollingResult<T> {
+  /**
+   * 轮询结果
+   */
+  result: Promise<T>
+  /**
+   * 控制器
+   */
+  controller: PollingController
+}
+
 /**
  * 轮询
  * @param cb 轮询回调
@@ -46,7 +61,7 @@ export interface PollingConfig {
 export function polling<T = void>(
   cb: (params: PollingParams<T>) => Promise<void> | void,
   config: PollingConfig = {}
-): Promise<T> {
+): PollingResult<T> {
   const { delay = 1000, maxAttempts = Number.MAX_SAFE_INTEGER, maxElapsedTime = Number.MAX_SAFE_INTEGER } = config
 
   const { promise, resolve, reject } = withResolvers<T>()
@@ -56,6 +71,8 @@ export function polling<T = void>(
   let isDone = false
   // 当前轮询次数
   let attempts = 1
+  // 轮询定时器
+  let timer: ReturnType<typeof setTimeout>
 
   const process = async () => {
     // 如果已完成，直接退出
@@ -63,19 +80,12 @@ export function polling<T = void>(
     // 计算消耗时间
     const elapsedTime = Date.now() - startTime
 
-    // 检查轮询边界条件
-    if (attempts > maxAttempts) {
-      isDone = true
-      reject(new Error(`Exceeded maxAttempts: ${attempts} > ${maxAttempts}`))
-      return
-    }
+
     if (elapsedTime > maxElapsedTime) {
       isDone = true
       reject(new Error(`Exceeded maxElapsedTime: ${elapsedTime}ms > ${maxElapsedTime}ms`))
       return
     }
-
-    let timer: ReturnType<typeof setTimeout>
 
     try {
       let isActioned = false
@@ -85,10 +95,18 @@ export function polling<T = void>(
         next: () => {
           if (isDone) return
           if (isActioned) return
-          isActioned = true
 
+          isActioned = true
           attempts++
-          timer = setTimeout(process, delay)
+
+          // 检查轮询边界条件
+          if (attempts > maxAttempts) {
+            isDone = true
+            reject(new Error(`Exceeded maxAttempts: ${maxAttempts}`))
+            return
+          }
+          const delayValue = typeof delay === 'function' ? delay(attempts) : delay
+          timer = setTimeout(process, delayValue)
         },
         resolve: (data) => {
           if (isDone) return
@@ -120,5 +138,13 @@ export function polling<T = void>(
   }
 
   process() // 启动轮询
-  return promise
+  const controller: PollingController = {
+    cancel:()=>{
+      if (isDone) return
+      isDone = true
+      clearTimeout(timer)
+      reject(new Error('Polling cancelled'))
+    }
+  }
+  return { result: promise, controller }
 }
